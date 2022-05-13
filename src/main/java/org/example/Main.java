@@ -1,37 +1,49 @@
 package org.example;
 
-import javax.imageio.ImageIO;
+import org.example.service.ImageContentScaleListener;
+import org.example.ui.ImageContent;
+import org.example.ui.Toolbar;
+
+import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
 import java.io.*;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        BufferedImage inputImage = ImageIO.read(new File(args[0]));
-        final String greyscaleCharacters = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-        int greyscaleCharactersLength = greyscaleCharacters.length();
-        for (int i = 0; i < inputImage.getWidth(); i++) {
-            for (int j = 0; j < inputImage.getHeight(); j++) {
-                int rgb = inputImage.getRGB(i, j);
-                double brightness = (0.2126 * getRed(rgb)) + (0.7152 * getGreen(rgb)) + (0.0722 * getBlue(rgb));
-                System.out.print(greyscaleCharacters.charAt((int) (brightness / greyscaleCharactersLength)));
-            }
-            System.out.println();
-        }
+    private static final JFrame frame = new JFrame("To ASCII Converter");
+    private static final CardLayout cardLayout = new CardLayout();
+    private static final JPanel cardLayoutHolder = new JPanel();
+
+    public static void main(String[] args) {
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.setResizable(true);
+        frame.setLocationRelativeTo(null);
+        frame.setLayout(new BorderLayout());
+
+        frame.add(cardLayoutHolder, BorderLayout.CENTER);
+        cardLayoutHolder.setLayout(cardLayout);
+
+        ImageContent imageContent = new ImageContent();
+        ImageContentScaleListener scaleListener = new ImageContentScaleListener(imageContent);
+        imageContent.addMouseWheelListener(scaleListener);
+
+        Toolbar toolbar = new Toolbar(imageContent);
+        cardLayoutHolder.add("toolbar", toolbar);
+        cardLayoutHolder.add("image", imageContent);
+
+        frame.pack();
+        frame.revalidate();
+        frame.repaint();
     }
 
-    public static int getRed(int rgb) {
-        return (rgb >> 16) & 0xFF;
+    public static JFrame getFrame() {
+        return Main.frame;
     }
 
-    public static int getGreen(int rgb) {
-        return (rgb >> 8) & 0xFF;
-    }
-
-    public static int getBlue(int rgb) {
-        return (rgb >> 0) & 0xFF;
+    public static void switchFrameView(String name) {
+        cardLayout.show(cardLayoutHolder, name);
+        frame.pack();
     }
 
 }
